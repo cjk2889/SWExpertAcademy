@@ -1,67 +1,229 @@
-/////////////////////////////////////////////////////////////////////////////////////////////
-// 기본 제공코드는 임의 수정해도 관계 없습니다. 단, 입출력 포맷 주의
-// 아래 표준 입출력 예제 필요시 참고하세요.
-// 표준 입력 예제
-// int a;
-// float b, c;
-// double d, e, f;
-// char g;
-// char var[256];
-// long long AB;
-// cin >> a;                            // int 변수 1개 입력받는 예제
-// cin >> b >> c;                       // float 변수 2개 입력받는 예제 
-// cin >> d >> e >> f;                  // double 변수 3개 입력받는 예제
-// cin >> g;                            // char 변수 1개 입력받는 예제
-// cin >> var;                          // 문자열 1개 입력받는 예제
-// cin >> AB;                           // long long 변수 1개 입력받는 예제
-/////////////////////////////////////////////////////////////////////////////////////////////
-// 표준 출력 예제
-// int a = 0;                            
-// float b = 1.0, c = 2.0;               
-// double d = 3.0, e = 0.0; f = 1.0;
-// char g = 'b';
-// char var[256] = "ABCDEFG";
-// long long AB = 12345678901234567L;
-// cout << a;                           // int 변수 1개 출력하는 예제
-// cout << b << " " << c;               // float 변수 2개 출력하는 예제
-// cout << d << " " << e << " " << f;   // double 변수 3개 출력하는 예제
-// cout << g;                           // char 변수 1개 출력하는 예제
-// cout << var;                         // 문자열 1개 출력하는 예제
-// cout << AB;                          // long long 변수 1개 출력하는 예제
-/////////////////////////////////////////////////////////////////////////////////////////////
+#include <iostream>
+#include <stdlib.h>
 
-#include<iostream>
+#define MAX 30000
 
 using namespace std;
 
-int main(int argc, char** argv)
+// 0000 0000 0000 0000 
+typedef unsigned long long int u64;
+
+typedef struct Block{
+    int block_num;
+    u64 module;
+    u64 reverse;
+    
+    int max;
+    int min;
+    bool used;
+    
+    Block &operator=(Block ex)
+    {
+        block_num = ex.block_num;
+        module = ex.module;
+        reverse = ex.reverse;
+
+        max = ex.max;
+        min = ex.min;
+        used = ex.used;
+        return *this;
+    }
+} Block;
+
+void quickSort(int first, int last);
+int binarySearch(int low, int high, u64 target);
+u64 getRotate90(u64 input); // rotate 90 degree
+u64 arr2u64(int module[4][4]); // int array -> uint64
+void u642arr(u64 in, char out[16]); // uint64 -> int array
+
+extern int makeBlock(int module[][4][4]);
+
+Block b[MAX];
+Block reverse_b[MAX*4 + 4];
+
+int main(void)
 {
-	int test_case;
-	int T;
-	/*
-	   아래의 freopen 함수는 input.txt 를 read only 형식으로 연 후,
-	   앞으로 표준 입력(키보드) 대신 input.txt 파일로부터 읽어오겠다는 의미의 코드입니다.
-	   //여러분이 작성한 코드를 테스트 할 때, 편의를 위해서 input.txt에 입력을 저장한 후,
-	   freopen 함수를 이용하면 이후 cin 을 수행할 때 표준 입력 대신 파일로부터 입력을 받아올 수 있습니다.
-	   따라서 테스트를 수행할 때에는 아래 주석을 지우고 이 함수를 사용하셔도 좋습니다.
-	   freopen 함수를 사용하기 위해서는 #include <cstdio>, 혹은 #include <stdio.h> 가 필요합니다.
-	   단, 채점을 위해 코드를 제출하실 때에는 반드시 freopen 함수를 지우거나 주석 처리 하셔야 합니다.
-	*/
-	//freopen("input.txt", "r", stdin);
-	cin>>T;
-	/*
-	   여러 개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
-	*/
-	for(test_case = 1; test_case <= T; ++test_case)
+    static int module[MAX][4][4];
+
+    srand(3); // 3 will be changed
+
+    for (int tc = 1; tc <= 10; tc++)
+    {
+        for (int c = 0; c < MAX; c++)
+        {
+            int base = 1 + (rand() % 6); // 1 ~ 7
+			for (int y = 0; y < 4; y++)
+			{
+				for (int x = 0; x < 4; x++)
+				{
+					module[c][y][x] = base + (rand() % 3); // 1 ~ 
+                    if(module[c][y][x] >= 9)
+                        cout << "module num ::" << c << ":" << y << ":" << x << endl;
+				}
+			}
+        }
+		cout << "#" << tc << " " << makeBlock(module) << endl;
+    }
+
+	return 0;
+}
+void quickSort(int first, int last)
+{
+    int pivot;
+    int i;
+    int j;
+    Block temp;
+     
+    if (first < last)
+    {
+        pivot = first;
+        i = first;
+        j = last;
+ 
+        while (i < j)
+        {
+            while (reverse_b[i].reverse >= reverse_b[pivot].reverse && i < last)
+            {
+                i++;
+            }
+            while (reverse_b[j].reverse < reverse_b[pivot].reverse)
+            {
+                j--;
+            }
+            if (i < j)
+            {
+                temp = reverse_b[i];
+                reverse_b[i] = reverse_b[j];
+                reverse_b[j] = temp;
+            }
+        }
+ 
+        temp = reverse_b[pivot];
+        reverse_b[pivot] = reverse_b[j];
+        reverse_b[j] = temp;
+ 
+        quickSort(first, j - 1);
+        quickSort(j + 1, last);
+    }
+}
+
+int binarySearch(int low, int high, u64 target)
+{
+    int mid;
+    if (low > high) 
+    {
+        return -1;
+    }
+ 
+    mid = (low + high) / 2;
+ 
+    if (target < reverse_b[mid].reverse)
+    {
+        return binarySearch(low, mid - 1, target);
+    }
+    else if (reverse_b[mid].reverse < target)
+    {
+        return binarySearch(mid + 1, high, target);
+    }
+    else
+    {
+		int index = reverse_b[mid].block_num;
+
+		reverse_b[mid].used = true;
+		b[index].used = true;
+
+        return mid;
+    }
+}
+ 
+
+u64 getRotate90(u64 input){
+    u64 ret = input % 1000000000000 * 10000 + (input/1000000000000);
+    return ret;
+}
+
+u64 arr2u64(int module[4][4]){
+    u64 ret = 0;
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            ret += module[y][x];
+            ret *= 10;
+        }
+    }
+    return ret/10;
+}
+
+void u642arr(u64 in, char out[16]){
+    u64 ret = 0;
+    for(int i = 15; i >= 0; i--){
+        out[i] = in%10;
+        in /= 10;
+    }
+}
+
+int makeBlock(int module[][4][4]){
+    int ret = 0;
+
+    for (int c = 0; c < MAX; c++)
+    {
+        b[c].block_num = c;
+        b[c].module = 0;
+        b[c].reverse = 0;
+
+        b[c].max = module[c][0][0];
+        b[c].min = module[c][0][0];
+        b[c].used = false;
+
+		for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                b[c].module += module[c][y][x]; b[c].module *= 10;
+                b[c].reverse += module[c][y][3-x];  b[c].reverse *= 10;
+                b[c].min = (b[c].min >  module[c][y][x])?  module[c][y][x] : b[c].min;
+                b[c].max = (b[c].max < module[c][y][x])? module[c][y][x] : b[c].max;
+            }
+        }
+        b[c].module /= 10;
+        b[c].reverse /= 10;
+
+		for(int i = 0; i < 4; i++)
+		{
+			reverse_b[c * 4 + i].block_num = c;
+			reverse_b[c * 4 + i].max = module[c][0][0];
+			reverse_b[c * 4 + i].min = module[c][0][0];
+			reverse_b[c * 4 + i].used = false;
+			reverse_b[c * 4 + i].module = b[c].module;
+			
+			reverse_b[c * 4 + i].reverse = (i == 0 ) ? b[c].reverse : getRotate90(reverse_b[c * 4 + i-1].reverse);
+		}
+    }
+
+	if (binarySearch(0, MAX * 4 + 3, b[0].reverse) >= 0)
 	{
-
-		/////////////////////////////////////////////////////////////////////////////////////////////
-		/*
-			 이 부분에 여러분의 알고리즘 구현이 들어갑니다.
-		 */
-		/////////////////////////////////////////////////////////////////////////////////////////////
-
-
+		cout << b[0].reverse << endl;
 	}
-	return 0;//정상종료시 반드시 0을 리턴해야합니다.
+    quickSort(0,MAX*4 + 3);
+
+
+	for (int c = 0; c < MAX; c++)
+    {
+        if(b[c].used == true)
+            c++;
+        
+		int block_height = 16;
+		u64 target_module = block_height * (1111111111111111) - b[c].module;
+		for(;block_height >=3 || block_height >= b[c].max; block_height--){
+			if(binarySearch(0,MAX * 4 + 3, b[c].reverse) >= 0){
+				ret += block_height;
+				break;
+			}
+			target_module -= 1111111111111111;
+		}
+    }
+
+
+    return ret;
 }
