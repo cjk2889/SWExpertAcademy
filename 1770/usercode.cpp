@@ -207,8 +207,9 @@ int makeBlock(int module[][4][4]){
         for (; block_height >= 2 ; block_height--)
         {
             int searchResult = binarySearch(0, MAX * 4 - 1, target_module);
-            if (searchResult >= 0 && check_used[searchResult] != true)
+            if (searchResult >= 0 && check_used[searchResult] != true && searchResult != c)
             {
+                // cout << c << ":" << searchResult << ":" << b[c].module << "::" << target_module << endl;
                 ret += target_module % 10 + b[c].module % 10;
                 check_used[searchResult] = true;
                 check_used[c] = true;
@@ -217,7 +218,6 @@ int makeBlock(int module[][4][4]){
             target_module -= 1111111111111111;
         }
     }
-
 
     return ret;
 }
