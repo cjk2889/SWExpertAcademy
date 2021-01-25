@@ -1,109 +1,103 @@
-#include<iostream>
+#include <math.h>
+
+#include <iostream>
 
 using namespace std;
 
 void solution(int num, int den);
-int getGCD(int a, int b)
-{
-	return b ? getGCD(b, a%b) : a;
+int getGCD(int a, int b) {
+    return b ? getGCD(b, a % b) : a;
 }
 
-int main(int argc, char** argv)
-{
-	int test_case;
-	int T;
-    
-	freopen("input.txt", "r", stdin);
-	cin>>T;
-    
-	for(test_case = 1; test_case <= T; ++test_case)
-	{
-                int num = 0; // numerator
-                int den = 0; // denominator
-                int gcd = 0;
+int main(int argc, char** argv) {
+    int test_case;
+    int T;
 
-                cin >> num;
-                cin >> den;
-                gcd = getGCD(num, den);
+    //freopen("test.txt", "r", stdin);
+    cin >> T;
 
-                num /= gcd;
-                num /= gcd;
+    for (test_case = 1; test_case <= T; ++test_case) {
+        int num = 0;  // numerator
+        int den = 0;  // denominator
+        int gcd = 0;
 
-                cout << "input:: " << num << "/" << den << endl;
-                solution(num,den);
-        }
-	return 0;//ì •ìƒì¢…ë£Œì‹œ ë°˜ë“œì‹œ 0ì„ ë¦¬í„´í•´ì•¼í•©ë‹ˆë‹¤.
+        cin >> num;
+        cin >> den;
+        gcd = getGCD(num, den);
+
+        num /= gcd;
+        num /= gcd;
+
+        // cout << "input:: " << num << "/" << den << endl;
+        cout << "#" << test_case << " ";
+        solution(num, den);
+    }
+    return 0;  //Á¤»óÁ¾·á½Ã ¹Ýµå½Ã 0À» ¸®ÅÏÇØ¾ßÇÕ´Ï´Ù.
 }
 
-void solution(int num, int den){
-        int div__[2] = {0,}; // [ 2^div__[0], 5^div__[1] ]
+void solution(int num, int den) {
+    int div__[2] = {
+        0,
+    };  // [ 2^div__[0], 5^div__[1] ]
+    int q = den;
 
-        int tmp_den = den;
+    while (q != 1 && q % 2 == 0) {
+        q /= 2;
+        div__[0]++;
+    }
 
-        while(tmp_den != 1 && tmp_den%2 == 0 ){
-                tmp_den /= 2;
-                div__[0]++;
+    while (q != 1 && q % 5 == 0) {
+        q /= 5;
+        div__[1]++;
+    }
+
+    if (q == 1) {
+        cout << (float)num / den << endl;
+        return;
+    }
+
+    int P = 0;  // ¼øÈ¯¼Ò¼ö ½ÃÀÛ À§Ä¡
+    int make_ten = 0;
+
+    if (div__[0] > div__[1]) {
+        div__[1] = div__[0];
+        make_ten = div__[0] - div__[1];
+        num *= pow(5, make_ten);
+        den *= pow(5, make_ten);
+    } else if (div__[0] < div__[1]) {
+        div__[0] = div__[1];
+        make_ten = div__[1] - div__[0];
+        num = (num << make_ten);  // 2^make_ten
+        den = (den << make_ten);
+    }
+
+    // 10^k === 1 mod q
+    // k = ¼øÈ¯ ¸¶µð ±æÀÌ
+    int k = 1;
+    int power_of_n = 10;
+    while (true) {
+        if (power_of_n % q == 1) {
+            break;
         }
+        power_of_n = (power_of_n * 10) % q;
+        k++;
+    }
+    //cout << endl << k << endl;
 
-        while(tmp_den != 1 && tmp_den%5 == 0 ){
-                tmp_den /= 5;
-                div__[1]++;
-        }
+    cout << num / den << ".";
+    num = num - (num / den) * den;
 
-        if(tmp_den == 1){
-                cout << (float)num/den << endl;
-                return;
-        }
+    int n = num * 10;
+    for (int i = 0; i < div__[0]; i++) {
+        cout << (n / den);
+        n = (n % den) * 10;
+    }
 
-        cout << num/den << ".";
-        num = num - (num/den) * den;
-
-        int P = 0; // ìˆœí™˜ì†Œìˆ˜ ì‹œìž‘ ìœ„ì¹˜
-        int make_ten = 0;
-
-        if( div__[0] > div__[1] ){
-                P = div__[0] + 1;
-                make_ten = div__[0] - div__[1];
-                num *= pow(5,make_ten);
-                den = tmp_den;
-        }
-        else{
-                P = div__[1] + 1;
-                make_ten = div__[1] - div__[0];
-                num = (num << make_ten);
-                den = tmp_den;
-        }
-
-        for(int i = 0; i < P; i++){
-                cout << "0";
-        }
-
-        cout << num/den;
-        num = num - (num/den) * den;
-        cout << "(";
-
-        int ten_power_of_n = 10;
-
-        // ìˆœí™˜ ì†Œìˆ˜ì˜ ê¸¸ì´
-        int k = 1;
-        for (k = 0; k < tmp_den; k++)
-        {
-                /* code */
-        }
-        
-
-        // for(int n = 1; n < tmp_den; n++){
-                
-        //         for(k = 1; k*tmp_den < ten_power_of_n - 1; k++);
-
-        //         if(k*tmp_den == ten_power_of_n - 1){
-        //                 printf("k :: %d\n",k*tmp_den);
-        //                 break;
-        //         }
-        //         ten_power_of_n *= 10;
-        // }
-        //cout << num << "/" << den << endl;
-        //cout << "2^" << div__[0] << ":5^" << div__[1] << endl;
-        
-        cout << endl;
+    // ¼øÈ¯ ¼Ò¼ö ±¸ÇÏ±â
+    cout << "(";
+    for (int i = 0; i < k; i++) {
+        cout << (n / den);
+        n = (n % den) * 10;
+    }
+    cout << ")" << endl;
 }
