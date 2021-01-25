@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     int test_case;
     int T;
 
-    //freopen("test.txt", "r", stdin);
+    freopen("input.txt", "r", stdin);
     cin >> T;
 
     for (test_case = 1; test_case <= T; ++test_case) {
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         gcd = getGCD(num, den);
 
         num /= gcd;
-        num /= gcd;
+        den /= gcd;
 
         // cout << "input:: " << num << "/" << den << endl;
         cout << "#" << test_case << " ";
@@ -52,7 +52,14 @@ void solution(int num, int den) {
     }
 
     if (q == 1) {
-        cout << (float)num / den << endl;
+        for(int i = 0; num != 0; i++) {
+            if(i == 1)
+                cout << ".";
+            cout << (num / den);
+            num = (num % den) * 10;
+        }
+        cout << endl;
+
         return;
     }
 
