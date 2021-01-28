@@ -1,7 +1,5 @@
 #include <stdlib.h>
 #include <iostream>
-#include <limits>
-
 #define INF 999999
 
 using namespace std;
@@ -63,13 +61,17 @@ int main(int argc, char **argv) {
 }
 
 int solution(int s, int e) {
+    int C = (s == 0) ? sum[e] : sum[e] - sum[s-1];
     if(s >= e)
         return 0;
     if( s + 1 == e)
         return input[s] + input[e];
     
     for( int i = s; i < e; i++){
-        int tmp = solution(s,i) + solution(i+1, e) + sum[e] - sum[s-1];
+        int left = solution(s,i);
+        int right = solution(i+1,e);
+        int tmp = left + right + C;
+
         d[s][e] = (d[s][e] > tmp) ? tmp : d[s][e];
     }
 
